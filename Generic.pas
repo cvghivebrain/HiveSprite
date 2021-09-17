@@ -331,7 +331,7 @@ begin
   editPal3loc.Text := FixLoc(editPal3loc.Text);
   editPal4loc.Text := FixLoc(editPal4loc.Text);
   // Graphics (no DPLC)
-  if editDPLC.Text = '' then
+  if (editDPLC.Text = '') or (chkDPLC.Enabled = false) then
     begin
     SetLength(gfxarray2,Length(gfxarray)-StrtoInt(editROMloc.Text));
     Move(gfxarray[StrtoInt(editROMloc.Text)],gfxarray2[0],Length(gfxarray2));
@@ -365,7 +365,7 @@ begin
   for i := 0 to mapcount-1 do mapindex[i] := GetM(maploc+(i*2),2,$FFFF)+maploc; // Populate index.
   for i := 0 to mapcount-1 do
     begin
-    if editDPLC.Text <> '' then // Load graphics if DPLC is used.
+    if (editDPLC.Text <> '') and (chkDPLC.Enabled = true) then // Load graphics if DPLC is used.
       begin
       dplcloc := StrtoInt(editDPLCloc.Text);
       dplcloc := dplcloc+GetD(dplcloc+(i*2),2,$FFFF)+dplccount_size; // Jump to relevant DPLC entry.
@@ -568,8 +568,14 @@ begin
 end;
 
 procedure TForm1.btnSaveClick(Sender: TObject);
+var mypng: string;
 begin
-  if dlgSave.Execute then PNG.SaveToFile(dlgSave.FileName); // Save PNG.
+  if dlgSave.Execute then
+    begin
+    if ExtractFileExt(dlgSave.FileName) = '.png' then mypng := dlgSave.FileName
+    else mypng := dlgSave.FileName+'.png'; // Add extension if needed.
+    PNG.SaveToFile(mypng); // Save PNG.
+    end;
 end;
 
 end.
