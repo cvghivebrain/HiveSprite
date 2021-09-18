@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StrUtils, ExtCtrls, StdCtrls, pngimage;
+  Dialogs, StrUtils, ExtCtrls, StdCtrls, pngimage, Math;
 
 type
   TForm1 = class(TForm)
@@ -32,6 +32,8 @@ type
     btnSave: TButton;
     dlgSave: TSaveDialog;
     img: TImage;
+    editMapcount: TEdit;
+    lblMapcountt: TLabel;
     procedure editROMClick(Sender: TObject);
     procedure editMapClick(Sender: TObject);
     procedure editDPLCClick(Sender: TObject);
@@ -73,7 +75,7 @@ var
   PNG: TPNGImage;
   formatlist: array[0..100] of string;
   mapindex: array[0..255] of integer;
-  imgsize, spacing, bgcolor, mapcount, sprcount_size, spr_size, x_, x_size, x_mask,
+  imgsize, spacing, bgcolor, bgcolor2, mapcount, sprcount_size, spr_size, x_, x_size, x_mask,
     y_, y_size, y_mask, dim_, dim_size, dim_mask, tile_, tile_size, tile_mask,
     xflip_, xflip_size, xflip_mask, yflip_, yflip_size, yflip_mask,
     palette_, palette_size, palette_mask, priority_, priority_size, priority_mask,
@@ -164,6 +166,7 @@ label noini;
 begin
   Application.Title := 'HiveSprite';
   bgcolor := 0;
+  bgcolor2 := 0;
   if not FileExists(ExtractFilePath(Application.ExeName)+'hivesprite.ini') then
     begin
     ShowMessage('ini file not found.');
@@ -182,6 +185,11 @@ begin
         begin
         bgcolor := StrtoInt(Explode(s,'=',1)); // Get background colour.
         bgcolor := (bgcolor shr 16)+(bgcolor and $FF00)+((bgcolor and $FF) shl 16); // Convert RBG to TColor BGR.
+        end
+      else if Explode(s,'=',0) = 'bgcolor2' then
+        begin
+        bgcolor2 := StrtoInt(Explode(s,'=',1)); // Get background colour.
+        bgcolor2 := (bgcolor2 shr 16)+(bgcolor2 and $FF00)+((bgcolor2 and $FF) shl 16); // Convert RBG to TColor BGR.
         end
       else
         begin
@@ -313,7 +321,9 @@ begin
   imgsize := spacing*16;
   PNG := TPNGImage.CreateBlank(COLOR_RGB,8,imgsize,imgsize); // Create PNG.
   for i := 0 to (imgsize*imgsize)-1 do
-    PNG.Pixels[i mod imgsize,i div imgsize] := bgcolor; // Fill background.
+    if Odd((i mod imgsize) div spacing) xor Odd((i div imgsize) div spacing) then
+      PNG.Pixels[i mod imgsize,i div imgsize] := bgcolor // Fill background.
+    else PNG.Pixels[i mod imgsize,i div imgsize] := bgcolor2;
   if (editROM.Text = '') or (editMap.Text = '') or (editPal1.Text = '') then // Check file fields.
     begin
     ShowMessage('Files not selected.');
@@ -361,7 +371,17 @@ begin
   // Mappings
   for i := 0 to 255 do mapindex[i] := 0; // Clear mappings index.
   maploc := StrtoInt(editMaploc.Text);
-  mapcount := GetM(maploc,2,$FFFF) div 2; // Assume 1st in index is 1st listed.
+  if editMapcount.Text = '0' then
+    mapcount := GetM(maploc,2,$FFFF) div 2 // Assume 1st in index is 1st listed.
+  else
+    begin
+    if TryStrtoInt(editMapcount.Text,i) = true then mapcount := Min(i,256) // Check number is valid, limited to 256.
+    else
+      begin
+      editMapcount.Text := '0';
+      mapcount := GetM(maploc,2,$FFFF) div 2;
+      end;
+    end;
   for i := 0 to mapcount-1 do mapindex[i] := GetM(maploc+(i*2),2,$FFFF)+maploc; // Populate index.
   for i := 0 to mapcount-1 do
     begin

@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Caption = 'HiveSprite'
+  Caption = 'HiveSprite 1.1'
   ClientHeight = 636
   ClientWidth = 1289
   Color = clBtnFace
@@ -90,6 +90,14 @@ object Form1: TForm1
     Top = 8
     Width = 73
     Height = 73
+  end
+  object lblMapcountt: TLabel
+    Left = 207
+    Top = 139
+    Width = 59
+    Height = 38
+    Caption = 'Mapcount (0 for auto)'
+    WordWrap = True
   end
   object editROM: TLabeledEdit
     Left = 8
@@ -288,6 +296,15 @@ object Form1: TForm1
     Enabled = False
     TabOrder = 20
     OnClick = btnSaveClick
+  end
+  object editMapcount: TEdit
+    Left = 143
+    Top = 139
+    Width = 58
+    Height = 21
+    TabStop = False
+    TabOrder = 21
+    Text = '0'
   end
   object dlgOpen: TOpenDialog
     Left = 8
