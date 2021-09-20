@@ -91,11 +91,11 @@ object Form1: TForm1
     Width = 73
     Height = 73
   end
-  object lblMapcountt: TLabel
+  object lblMapcount: TLabel
     Left = 207
     Top = 139
-    Width = 59
-    Height = 38
+    Width = 51
+    Height = 26
     Caption = 'Mapcount (0 for auto)'
     WordWrap = True
   end

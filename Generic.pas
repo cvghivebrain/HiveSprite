@@ -33,7 +33,7 @@ type
     dlgSave: TSaveDialog;
     img: TImage;
     editMapcount: TEdit;
-    lblMapcountt: TLabel;
+    lblMapcount: TLabel;
     procedure editROMClick(Sender: TObject);
     procedure editMapClick(Sender: TObject);
     procedure editDPLCClick(Sender: TObject);
@@ -151,6 +151,8 @@ end;
 function TForm1.FixLoc(s: string): string; // Add $ sign to addresses and clear them if invalid.
 var i: integer;
 begin
+  while (s <> '0') and (s[1] = '0') do
+    s := Copy(s,2,Length(s)-1); // Trim leading 0s.
   if (Copy(s,1,1) <> '$') and (s <> '0') then s := '$'+s; // Add hex sign if missing.
   if TryStrtoInt(s,i) = true then result := s // Output string if it's a valid number.
   else result := '0'; // Output 0 if it's not.
