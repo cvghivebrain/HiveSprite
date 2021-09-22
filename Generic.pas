@@ -34,6 +34,7 @@ type
     img: TImage;
     editMapcount: TEdit;
     lblMapcount: TLabel;
+    listShortcuts: TListBox;
     procedure editROMClick(Sender: TObject);
     procedure editMapClick(Sender: TObject);
     procedure editDPLCClick(Sender: TObject);
@@ -47,6 +48,7 @@ type
     procedure btnSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure menuMapChange(Sender: TObject);
+    procedure listShortcutsClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadFile(openthis: string; target: integer);
@@ -80,6 +82,7 @@ var
     xflip_, xflip_size, xflip_mask, yflip_, yflip_size, yflip_mask,
     palette_, palette_size, palette_mask, priority_, priority_size, priority_mask,
     dplccount_size, dplc_size, q_, q_size, q_mask, gfx_, gfx_size, gfx_mask: integer;
+  shortcutarray: array of string;
 
 implementation
 
@@ -151,6 +154,7 @@ end;
 function TForm1.FixLoc(s: string): string; // Add $ sign to addresses and clear them if invalid.
 var i: integer;
 begin
+  if s = '' then s := '0'; // Replace blank input with 0.
   while (s <> '0') and (s[1] = '0') do
     s := Copy(s,2,Length(s)-1); // Trim leading 0s.
   if (Copy(s,1,1) <> '$') and (s <> '0') then s := '$'+s; // Add hex sign if missing.
@@ -169,6 +173,7 @@ begin
   Application.Title := 'HiveSprite';
   bgcolor := 0;
   bgcolor2 := 0;
+  SetLength(shortcutarray,0);
   if not FileExists(ExtractFilePath(Application.ExeName)+'hivesprite.ini') then
     begin
     ShowMessage('ini file not found.');
@@ -192,6 +197,12 @@ begin
         begin
         bgcolor2 := StrtoInt(Explode(s,'=',1)); // Get background colour.
         bgcolor2 := (bgcolor2 shr 16)+(bgcolor2 and $FF00)+((bgcolor2 and $FF) shl 16); // Convert RBG to TColor BGR.
+        end
+      else if Explode(s,'=',0) = 'shortcut' then
+        begin
+        SetLength(shortcutarray,Length(shortcutarray)+1);
+        shortcutarray[Length(shortcutarray)-1] := Explode(s,'=',1); // Save shortcut in array.
+        listShortcuts.Items.Add(Explode(Explode(s,'=',1),'|',0)); // Add to list.
         end
       else
         begin
@@ -374,14 +385,17 @@ begin
   for i := 0 to 255 do mapindex[i] := 0; // Clear mappings index.
   maploc := StrtoInt(editMaploc.Text);
   if editMapcount.Text = '0' then
-    mapcount := GetM(maploc,2,$FFFF) div 2 // Assume 1st in index is 1st listed.
+    begin
+    mapcount := GetM(maploc,2,$FFFF) div 2; // Assume 1st in index is 1st listed.
+    editMapcount.Text := InttoStr(mapcount);
+    end
   else
     begin
     if TryStrtoInt(editMapcount.Text,i) = true then mapcount := Min(i,256) // Check number is valid, limited to 256.
     else
       begin
-      editMapcount.Text := '0';
       mapcount := GetM(maploc,2,$FFFF) div 2;
+      editMapcount.Text := InttoStr(mapcount);
       end;
     end;
   for i := 0 to mapcount-1 do mapindex[i] := GetM(maploc+(i*2),2,$FFFF)+maploc; // Populate index.
@@ -597,6 +611,26 @@ begin
     if ExtractFileExt(dlgSave.FileName) = '.png' then mypng := dlgSave.FileName
     else mypng := dlgSave.FileName+'.png'; // Add extension if needed.
     PNG.SaveToFile(mypng); // Save PNG.
+    end;
+end;
+
+procedure TForm1.listShortcutsClick(Sender: TObject);
+var i: integer;
+begin
+  i := listShortcuts.ItemIndex;
+  if i <> -1 then // Check if item is selected.
+    begin
+    editROMloc.Text := Explode(shortcutarray[i],'|',2); // Graphics address.
+    menuMap.ItemIndex := StrtoInt(Explode(shortcutarray[i],'|',3)); // Mappings format.
+    editMapcount.Text := Explode(shortcutarray[i],'|',4); // Mapcount.
+    editMaploc.Text := Explode(shortcutarray[i],'|',5); // Mappings address.
+    if Explode(shortcutarray[i],'|',6) = '0' then chkDPLC.Checked := false
+    else chkDPLC.Checked := true; // DPLC enable.
+    editDPLCloc.Text := Explode(shortcutarray[i],'|',7); // DPLC address.
+    editPal1loc.Text := Explode(shortcutarray[i],'|',8); // Palette address #1.
+    editPal2loc.Text := Explode(shortcutarray[i],'|',9); // Palette address #2.
+    editPal3loc.Text := Explode(shortcutarray[i],'|',10); // Palette address #3.
+    editPal4loc.Text := Explode(shortcutarray[i],'|',11); // Palette address #4.
     end;
 end;
 

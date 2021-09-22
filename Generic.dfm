@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 192
   Top = 124
-  Caption = 'HiveSprite 1.1'
+  Caption = 'HiveSprite 1.2'
   ClientHeight = 636
   ClientWidth = 1289
   Color = clBtnFace
@@ -306,14 +306,23 @@ object Form1: TForm1
     TabOrder = 21
     Text = '0'
   end
-  object dlgOpen: TOpenDialog
+  object listShortcuts: TListBox
     Left = 8
-    Top = 544
+    Top = 471
+    Width = 249
+    Height = 138
+    ItemHeight = 13
+    TabOrder = 22
+    OnClick = listShortcutsClick
+  end
+  object dlgOpen: TOpenDialog
+    Left = 400
+    Top = 488
   end
   object dlgSave: TSaveDialog
     Filter = 'PNG images|*.png'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
-    Left = 64
+    Left = 400
     Top = 544
   end
 end
