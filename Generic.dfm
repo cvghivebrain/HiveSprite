@@ -83,6 +83,7 @@ object Form1: TForm1
     0003FFC00003FFE00007FFF8000FFFFC001FFFFF807FFFFFFFFFFFFFFFFF}
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDblClick = FormDblClick
   PixelsPerInch = 96
   TextHeight = 13
   object img: TImage
@@ -315,14 +316,23 @@ object Form1: TForm1
     TabOrder = 22
     OnClick = listShortcutsClick
   end
+  object memoLog: TMemo
+    Left = 399
+    Top = 400
+    Width = 522
+    Height = 209
+    ScrollBars = ssVertical
+    TabOrder = 23
+    Visible = False
+  end
   object dlgOpen: TOpenDialog
-    Left = 400
-    Top = 488
+    Left = 272
+    Top = 480
   end
   object dlgSave: TSaveDialog
     Filter = 'PNG images|*.png'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
-    Left = 400
-    Top = 544
+    Left = 272
+    Top = 536
   end
 end

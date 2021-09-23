@@ -35,6 +35,7 @@ type
     editMapcount: TEdit;
     lblMapcount: TLabel;
     listShortcuts: TListBox;
+    memoLog: TMemo;
     procedure editROMClick(Sender: TObject);
     procedure editMapClick(Sender: TObject);
     procedure editDPLCClick(Sender: TObject);
@@ -49,6 +50,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure menuMapChange(Sender: TObject);
     procedure listShortcutsClick(Sender: TObject);
+    procedure FormDblClick(Sender: TObject);
   private
     { Private declarations }
     procedure LoadFile(openthis: string; target: integer);
@@ -101,21 +103,25 @@ begin
       begin
       SetLength(gfxarray,FileSize(myfile));
       BlockRead(myfile,gfxarray[0],FileSize(myfile)); // Copy file to graphics array.
+      memoLog.Lines.Add(openthis+' loaded to gfxarray ('+InttoStr(FileSize(myfile))+')');
       end
     else if target = 1 then
       begin
       SetLength(maparray,FileSize(myfile));
       BlockRead(myfile,maparray[0],FileSize(myfile)); // Copy file to mappings array.
+      memoLog.Lines.Add(openthis+' loaded to maparray ('+InttoStr(FileSize(myfile))+')');
       end
     else if target = 2 then
       begin
       SetLength(dplcarray,FileSize(myfile));
       BlockRead(myfile,dplcarray[0],FileSize(myfile)); // Copy file to DPLC array.
+      memoLog.Lines.Add(openthis+' loaded to dplcarray ('+InttoStr(FileSize(myfile))+')');
       end
     else if target = 3 then
       begin
       SetLength(palarray,FileSize(myfile));
       BlockRead(myfile,palarray[0],FileSize(myfile)); // Copy file to palette array.
+      memoLog.Lines.Add(openthis+' loaded to palarray ('+InttoStr(FileSize(myfile))+')');
       end;
     CloseFile(myfile); // Close file.
     end;
@@ -358,6 +364,7 @@ begin
     begin
     SetLength(gfxarray2,Length(gfxarray)-StrtoInt(editROMloc.Text));
     Move(gfxarray[StrtoInt(editROMloc.Text)],gfxarray2[0],Length(gfxarray2));
+    memoLog.Lines.Add('Graphics loaded to gfxarray2 ('+InttoStr(Length(gfxarray2))+')');
     end;
   // Palette
   for i := 0 to 63 do palarray2[i] := 0; // Clear palette.
@@ -384,7 +391,7 @@ begin
   // Mappings
   for i := 0 to 255 do mapindex[i] := 0; // Clear mappings index.
   maploc := StrtoInt(editMaploc.Text);
-  if editMapcount.Text = '0' then
+  if (editMapcount.Text = '0') or (editMapcount.Text = '') then
     begin
     mapcount := GetM(maploc,2,$FFFF) div 2; // Assume 1st in index is 1st listed.
     editMapcount.Text := InttoStr(mapcount);
@@ -404,10 +411,13 @@ begin
     if (editDPLC.Text <> '') and (chkDPLC.Enabled = true) then // Load graphics if DPLC is used.
       begin
       dplcloc := StrtoInt(editDPLCloc.Text);
-      dplcloc := dplcloc+GetD(dplcloc+(i*2),2,$FFFF)+dplccount_size; // Jump to relevant DPLC entry.
+      dplcloc := dplcloc+GetD(dplcloc+(i*2),2,$FFFF); // Jump to relevant DPLC entry.
+      memoLog.Lines.Add('DPLC entry found at $'+InttoHex(dplcloc,1));
       lastgfx := 0;
-      entries := GetD_U(dplcloc-dplccount_size,dplccount_size,$FFFF); // Number of entries in DPLC.
+      entries := GetD_U(dplcloc,dplccount_size,$FFFF); // Number of entries in DPLC.
+      memoLog.Lines.Add('DPLC entry count '+InttoStr(entries));
       SetLength(gfxarray2,entries*16*$20); // Max size of graphics loaded.
+      dplcloc := dplcloc+dplccount_size;
       for j := 0 to entries-1 do
         begin
         q := ((GetD_U(dplcloc+q_,q_size,q_mask) shr BitShift(q_mask))+1)*$20; // Get quantity of tiles.
@@ -419,6 +429,7 @@ begin
       end;
     DrawMap(mapindex[i],((i and $f)*spacing)+(spacing div 2),((i shr 4)*spacing)+(spacing div 2)); // Draw all sprites.
     end;
+  img.Picture := nil; // Reset image.
   img.Height := imgsize;
   img.Width := imgsize;
   img.Canvas.Draw(0,0,PNG); // Draw on screen.
@@ -438,6 +449,7 @@ begin
     b := lumin[palarray[source+(i*2)] and $f]; // Blue
     palarray2[target+i] := (b shl 16)+(g shl 8)+r; // Combine as TColor.
     end;
+  memoLog.Lines.Add('Palette line '+InttoStr(target div 16)+' loaded from $'+InttoHex(source,1)+' in palarray');
 end;
 
 function TForm1.GetM(a, s, mask: integer): integer; // Get bytes from mappings array.
@@ -631,7 +643,13 @@ begin
     editPal2loc.Text := Explode(shortcutarray[i],'|',9); // Palette address #2.
     editPal3loc.Text := Explode(shortcutarray[i],'|',10); // Palette address #3.
     editPal4loc.Text := Explode(shortcutarray[i],'|',11); // Palette address #4.
+    LoadFormat(menuMap.ItemIndex); // Load format variables.
     end;
+end;
+
+procedure TForm1.FormDblClick(Sender: TObject);
+begin
+  memoLog.Visible := not memoLog.Visible;
 end;
 
 end.
