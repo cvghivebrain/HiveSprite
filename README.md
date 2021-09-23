@@ -1,4 +1,4 @@
 # HiveSprite
 Rip sprites from Sonic games.
 
-![Image1](https://user-images.githubusercontent.com/66194501/133906567-0c35004e-76a2-4fd2-9a1c-4eeab7c381d8.png)
+![Image1](https://user-images.githubusercontent.com/66194501/134578258-e7e95ebc-bb48-4bd3-848c-0d13f1b8ce01.png)
